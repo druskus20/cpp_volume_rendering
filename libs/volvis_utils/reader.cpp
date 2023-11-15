@@ -298,7 +298,7 @@ namespace vis
             {
               for (int z = z0; z < z1; z++)
               {
-                syn_data[x + (width * y) + (width * height * z)] = unsigned char(v);
+                syn_data[x + (width * y) + (width * height * z)] = char(v);
               }
             }
           }
@@ -333,7 +333,7 @@ namespace vis
         {
           int xt, yt, zt, v;
           iffile >> xt >> yt >> zt >> v;
-          syn_data[xt + (width * yt) + (width * height * zt)] = unsigned char(v);
+          syn_data[xt + (width * yt) + (width * height * zt)] = char(v);
         }
       }
       

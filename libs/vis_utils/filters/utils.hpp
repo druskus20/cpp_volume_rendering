@@ -63,6 +63,7 @@ namespace vis
     }
   private:
     Pieces p; // Polynomial pieces of kernel (k0:[-2,-1], k1:[-1,0], k2:[0,1], k3:[1,2]
+     float b[4]; // Buffer declared here
   };
 };
 

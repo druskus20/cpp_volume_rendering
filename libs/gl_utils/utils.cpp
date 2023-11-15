@@ -6,6 +6,9 @@
 #include <locale>
 #include <fstream>
 
+#include "linux_headers.h"
+
+
 namespace gl
 {
   void ExitOnGLError(const char* error_message)

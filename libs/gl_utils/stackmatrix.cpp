@@ -1,5 +1,7 @@
 #include "stackmatrix.h"
 
+#include <iostream>
+
 #include <glm/gtc/type_ptr.hpp>
 
 namespace gl
