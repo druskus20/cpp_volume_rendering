@@ -3,7 +3,7 @@
  *
  * Leonardo Quatrin Campagnolo
  * . campagnolo.lq@gmail.com
-**/
+ **/
 #include "defines.h"
 #include "renderingmanager.h"
 #include "volrenderbase.h"
@@ -40,15 +40,17 @@ ApplicationGLFW app;
 #endif
 #endif
 
-
-float k (float x) {
+float k(float x)
+{
   x = abs(x);
   return x > 1.f ? 0.0f : 1.0f - x;
 }
 
-int main (int argc, char **argv)
+int main(int argc, char **argv)
 {
-  if (!app.Init(argc, argv)) return 1;
+
+  if (!app.Init(argc, argv))
+    return 1;
 
   RenderingManager::Instance()->InitGL();
 

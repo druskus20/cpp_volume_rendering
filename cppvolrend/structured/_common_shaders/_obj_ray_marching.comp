@@ -3,7 +3,7 @@
 layout (binding = 1) uniform sampler3D TexVolume; 
 layout (binding = 2) uniform sampler1D TexTransferFunc;
 layout (binding = 3) uniform sampler3D TexVolumeGradient;
-layout (binding = 4) uniform sampler3D TexVolumeLightCache;
+layout (binding = 4) uniform sampler1D TexVolumeLightCache;
 
 uniform vec3 VolumeScaledSizes;
 

@@ -3,30 +3,28 @@
  *
  * Leonardo Quatrin Campagnolo
  * . campagnolo.lq@gmail.com
-**/
+ **/
 #include <volvis_utils/datamanager.h>
 
 #include <fstream>
 #include <gl_utils/computeshader.h>
 #include <vis_utils/defines.h>
 #include <volvis_utils/utils.h>
-
+#include <iostream>
+#include <fstream>
+#include <cstdint>
 
 #include <volvis_utils/reader.h>
+#include "datamanager.h"
 
 namespace vis
 {
-  DataManager::DataManager ()
-    : curr_vol_data_type(vis::GRID_VOLUME_DATA_TYPE::STRUCTURED)
-    , use_specific_lookup_data_shader(false)
-    , curr_vr_volume(nullptr)
-    , curr_uns_grid_volume(nullptr)
-    , curr_vr_transferfunction(nullptr)
-    , curr_volume_index(0)
-    , curr_transferfunction_index(0)
-    , curr_gradient_comp_model(DataManager::STRUCTURED_GRADIENT_TYPE::NONE_GRADIENT)
-    , curr_gl_tex_structured_volume(nullptr)
-    , curr_gl_tex_structured_gradient(nullptr)
+  DataManager::DataManager()
+      : curr_vol_data_type(vis::GRID_VOLUME_DATA_TYPE::STRUCTURED), use_specific_lookup_data_shader(false), curr_vr_volume(nullptr), curr_uns_grid_volume(nullptr), curr_vr_transferfunction(nullptr), curr_volume_index(0), curr_transferfunction_index(0), curr_gradient_comp_model(DataManager::STRUCTURED_GRADIENT_TYPE::NONE_GRADIENT), curr_gl_tex_structured_volume(nullptr), curr_gl_tex_structured_gradient(nullptr),
+        curr_importances(nullptr),
+        curr_importances_width(0),
+        curr_importances_height(0),
+        curr_importances_depth(0)
   {
     m_path_to_data = "";
 #ifdef USE_DATA_PROVIDER
@@ -41,23 +39,23 @@ namespace vis
 #endif
   }
 
-  DataManager::~DataManager ()
+  DataManager::~DataManager()
   {
     DeleteVolumeData();
     DeleteTransferFunctionData();
   }
 
-  void DataManager::SetPathToData (std::string s_path_to_data)
+  void DataManager::SetPathToData(std::string s_path_to_data)
   {
     m_path_to_data = s_path_to_data;
   }
 
-  vis::GRID_VOLUME_DATA_TYPE DataManager::GetInputVolumeDataType ()
+  vis::GRID_VOLUME_DATA_TYPE DataManager::GetInputVolumeDataType()
   {
     return curr_vol_data_type;
   }
-  
-  const char* DataManager::GetStrVolumeDataType ()
+
+  const char *DataManager::GetStrVolumeDataType()
   {
     if (GetInputVolumeDataType() == vis::GRID_VOLUME_DATA_TYPE::STRUCTURED)
       return "Structured";
@@ -66,14 +64,15 @@ namespace vis
     return "None";
   }
 
-  void DataManager::ReadData ()
+  void DataManager::ReadData()
   {
 #ifdef USE_DATA_PROVIDER
     m_data_provider->ClearStructuredGridFileList();
     m_data_provider->ClearTransferFunctionFileList();
 
-    if (curr_vol_data_type == vis::GRID_VOLUME_DATA_TYPE::STRUCTURED) {
-      //m_data_provider->SetStructuredGridFileList(m_path_to_data, "#list_structured_datasets");
+    if (curr_vol_data_type == vis::GRID_VOLUME_DATA_TYPE::STRUCTURED)
+    {
+      // m_data_provider->SetStructuredGridFileList(m_path_to_data, "#list_structured_datasets");
       m_data_provider->SetStructuredGridFileList(m_path_to_data, "volume_list.csv");
       curr_volume_index = 0;
     }
@@ -100,7 +99,7 @@ namespace vis
     curr_vr_transferfunction->SetName(stored_transfer_functions[GetCurrentTransferFunctionIndex()].name);
   }
 
-  int DataManager::GetNumberOfStructuredDatasets ()
+  int DataManager::GetNumberOfStructuredDatasets()
   {
 #ifdef USE_DATA_PROVIDER
     return m_data_provider->GetNumberOfStructuredGrids();
@@ -109,14 +108,14 @@ namespace vis
 #endif
   }
 
-  int DataManager::GetCurrentVolumeIndex ()
+  int DataManager::GetCurrentVolumeIndex()
   {
     return curr_volume_index;
   }
 
-  std::string DataManager::GetCurrentVolumeName ()
+  std::string DataManager::GetCurrentVolumeName()
   {
-    if (GetInputVolumeDataType() == vis::GRID_VOLUME_DATA_TYPE::STRUCTURED) 
+    if (GetInputVolumeDataType() == vis::GRID_VOLUME_DATA_TYPE::STRUCTURED)
     {
 #ifdef USE_DATA_PROVIDER
       return m_data_provider->GetStructuredGridNameList()[GetCurrentVolumeIndex()];
@@ -127,7 +126,7 @@ namespace vis
     return "";
   }
 
-  vis::GridVolume* DataManager::GetCurrentGridVolume ()
+  vis::GridVolume *DataManager::GetCurrentGridVolume()
   {
     if (GetInputVolumeDataType() == vis::GRID_VOLUME_DATA_TYPE::STRUCTURED)
       return curr_vr_volume;
@@ -135,30 +134,30 @@ namespace vis
       return curr_uns_grid_volume;
   }
 
-  vis::StructuredGridVolume* DataManager::GetCurrentStructuredVolume ()
+  vis::StructuredGridVolume *DataManager::GetCurrentStructuredVolume()
   {
     return curr_vr_volume;
   }
 
-  vis::UnstructuredGridVolume* DataManager::GetCurrentUnstructuredVolume ()
+  vis::UnstructuredGridVolume *DataManager::GetCurrentUnstructuredVolume()
   {
     return curr_uns_grid_volume;
   }
-  
-  vis::TransferFunction* DataManager::GetCurrentTransferFunction ()
+
+  vis::TransferFunction *DataManager::GetCurrentTransferFunction()
   {
     return curr_vr_transferfunction;
   }
 
-  void DataManager::AddDataLookUpShader (gl::PipelineShader* ext_shader)
+  void DataManager::AddDataLookUpShader(gl::PipelineShader *ext_shader)
   {
     if (GetInputVolumeDataType() == vis::GRID_VOLUME_DATA_TYPE::STRUCTURED)
     {
-      //return stored_structured_datasets[GetCurrentVolumeIndex()].name;
+      // return stored_structured_datasets[GetCurrentVolumeIndex()].name;
     }
   }
 
-  void DataManager::AddDataLookUpShader (gl::ComputeShader* ext_shader)
+  void DataManager::AddDataLookUpShader(gl::ComputeShader *ext_shader)
   {
     if (GetInputVolumeDataType() == vis::GRID_VOLUME_DATA_TYPE::STRUCTURED)
     {
@@ -173,27 +172,27 @@ namespace vis
     }
   }
 
-  int DataManager::GetCurrentTransferFunctionIndex ()
+  int DataManager::GetCurrentTransferFunctionIndex()
   {
     return curr_transferfunction_index;
   }
-  
-  std::string DataManager::GetCurrentTransferFunctionName ()
+
+  std::string DataManager::GetCurrentTransferFunctionName()
   {
     return stored_transfer_functions[GetCurrentTransferFunctionIndex()].name;
   }
 
-  gl::Texture3D* DataManager::GetCurrentVolumeTexture ()
+  gl::Texture3D *DataManager::GetCurrentVolumeTexture()
   {
     return curr_gl_tex_structured_volume;
   }
 
-  gl::Texture3D* DataManager::GetCurrentGradientTexture ()
+  gl::Texture3D *DataManager::GetCurrentGradientTexture()
   {
     return curr_gl_tex_structured_gradient;
   }
 
-  std::vector<std::string>& DataManager::GetUINameTransferFunctionList ()
+  std::vector<std::string> &DataManager::GetUINameTransferFunctionList()
   {
 #ifdef USE_DATA_PROVIDER
     return m_data_provider->GetTransferFunctionNameList();
@@ -205,31 +204,35 @@ namespace vis
   ////////////////////////////////////////////////////////////////////////
   // Private Methods
   ////////////////////////////////////////////////////////////////////////
-  void DataManager::DeleteVolumeData ()
+  void DataManager::DeleteVolumeData()
   {
-    if (curr_vr_volume) delete curr_vr_volume;
+    if (curr_vr_volume)
+      delete curr_vr_volume;
     curr_vr_volume = nullptr;
 
-    if (curr_gl_tex_structured_volume) delete curr_gl_tex_structured_volume;
+    if (curr_gl_tex_structured_volume)
+      delete curr_gl_tex_structured_volume;
     curr_gl_tex_structured_volume = nullptr;
 
     DeleteGradientData();
   }
 
-  void DataManager::DeleteGradientData ()
+  void DataManager::DeleteGradientData()
   {
-    if (curr_gl_tex_structured_gradient) delete curr_gl_tex_structured_gradient;
+    if (curr_gl_tex_structured_gradient)
+      delete curr_gl_tex_structured_gradient;
     curr_gl_tex_structured_gradient = nullptr;
   }
 
-  void DataManager::DeleteTransferFunctionData ()
+  void DataManager::DeleteTransferFunctionData()
   {
-    if (curr_vr_transferfunction) delete curr_vr_transferfunction;
+    if (curr_vr_transferfunction)
+      delete curr_vr_transferfunction;
     curr_vr_transferfunction = nullptr;
   }
 
 #ifndef USE_DATA_PROVIDER
-  void DataManager::ReadStructuredDatasetsFromRes ()
+  void DataManager::ReadStructuredDatasetsFromRes()
   {
     std::string line;
     std::string model_read_filename = m_path_to_data;
@@ -270,7 +273,7 @@ namespace vis
     curr_volume_index = 0;
   }
 
-  void DataManager::ReadTransferFunctionsFromRes ()
+  void DataManager::ReadTransferFunctionsFromRes()
   {
     std::string line;
     std::string tfunc_read_filename = m_path_to_data;
@@ -296,10 +299,9 @@ namespace vis
       int end_name = line.find_last_of(">");
 
       stored_transfer_functions.push_back(DataReference(
-        line.substr(start_path, end_path - start_path),
-        line.substr(start_name, end_name - start_name),
-        m_path_to_data
-      ));
+          line.substr(start_path, end_path - start_path),
+          line.substr(start_name, end_name - start_name),
+          m_path_to_data));
     }
     f_opentransferfunctions.close();
 
@@ -308,7 +310,7 @@ namespace vis
   }
 #endif
 
-  bool DataManager::GenerateStructuredVolumeTexture ()
+  bool DataManager::GenerateStructuredVolumeTexture()
   {
     // Read Volume
 #ifdef USE_DATA_PROVIDER
@@ -316,12 +318,12 @@ namespace vis
 #else
     vis::VolumeReader vr;
     curr_vr_volume = vr.ReadStructuredVolume(stored_structured_datasets[GetCurrentVolumeIndex()].path);
-    curr_vr_volume->SetName(stored_structured_datasets[GetCurrentVolumeIndex()].name); 
+    curr_vr_volume->SetName(stored_structured_datasets[GetCurrentVolumeIndex()].name);
 #endif
 
     // Generate Volume Texture
     curr_gl_tex_structured_volume = vis::GenerateRTexture(curr_vr_volume, 0, 0, 0, curr_vr_volume->GetWidth(),
-      curr_vr_volume->GetHeight(), curr_vr_volume->GetDepth());
+                                                          curr_vr_volume->GetHeight(), curr_vr_volume->GetDepth());
 
     // Generate gradient, if enabled
     GenerateStructuredGradientTexture();
@@ -329,7 +331,7 @@ namespace vis
     return true;
   }
 
-  bool DataManager::GenerateStructuredGradientTexture ()
+  bool DataManager::GenerateStructuredGradientTexture()
   {
     if (curr_gradient_comp_model == STRUCTURED_GRADIENT_TYPE::SOBEL_FELDMAN_FILTER)
     {
@@ -351,7 +353,7 @@ namespace vis
     return true;
   }
 
-  bool DataManager::PreviousVolume ()
+  bool DataManager::PreviousVolume()
   {
     if (curr_vol_data_type == vis::GRID_VOLUME_DATA_TYPE::STRUCTURED)
     {
@@ -359,7 +361,7 @@ namespace vis
       {
         curr_volume_index -= 1;
         DeleteVolumeData();
-  
+
         GenerateStructuredVolumeTexture();
 
         return true;
@@ -367,8 +369,8 @@ namespace vis
     }
     return false;
   }
-  
-  bool DataManager::NextVolume ()
+
+  bool DataManager::NextVolume()
   {
     if (curr_vol_data_type == vis::GRID_VOLUME_DATA_TYPE::STRUCTURED)
     {
@@ -376,29 +378,30 @@ namespace vis
       {
         curr_volume_index += 1;
         DeleteVolumeData();
-  
+
         GenerateStructuredVolumeTexture();
-  
+
         return true;
       }
     }
     return false;
   }
 
-  bool DataManager::SetVolume (std::string name)
+  bool DataManager::SetVolume(std::string name)
   {
     if (curr_vol_data_type == vis::GRID_VOLUME_DATA_TYPE::STRUCTURED)
     {
 #ifdef USE_DATA_PROVIDER
       int new_volume_id = m_data_provider->FindStructuredGridName(name);
-      if (new_volume_id != -1) {
+      if (new_volume_id != -1)
+      {
         curr_volume_index = new_volume_id;
         DeleteVolumeData();
         GenerateStructuredVolumeTexture();
         return true;
       }
 #else
-      for (int i = 0; i < stored_structured_datasets.size(); i++) 
+      for (int i = 0; i < stored_structured_datasets.size(); i++)
       {
         if (stored_structured_datasets[i].name.compare(name) == 0)
         {
@@ -414,7 +417,7 @@ namespace vis
     return false;
   }
 
-  bool DataManager::SetCurrentInputVolume (int id)
+  bool DataManager::SetCurrentInputVolume(int id)
   {
     if (curr_vol_data_type == vis::GRID_VOLUME_DATA_TYPE::STRUCTURED)
     {
@@ -428,40 +431,40 @@ namespace vis
     }
     return false;
   }
-    
-  bool DataManager::PreviousTransferFunction ()
+
+  bool DataManager::PreviousTransferFunction()
   {
     if (curr_transferfunction_index > 0)
     {
       curr_transferfunction_index -= 1;
       DeleteTransferFunctionData();
-  
+
       vis::TransferFunctionReader tfr;
       curr_vr_transferfunction = tfr.ReadTransferFunction(stored_transfer_functions[curr_transferfunction_index].path);
       curr_vr_transferfunction->SetName(stored_transfer_functions[curr_transferfunction_index].name);
-  
+
       return true;
     }
     return false;
   }
-  
-  bool DataManager::NextTransferFunction ()
+
+  bool DataManager::NextTransferFunction()
   {
     if (curr_transferfunction_index + 1 < stored_transfer_functions.size())
     {
       curr_transferfunction_index += 1;
       DeleteTransferFunctionData();
-  
+
       vis::TransferFunctionReader tfr;
       curr_vr_transferfunction = tfr.ReadTransferFunction(stored_transfer_functions[curr_transferfunction_index].path);
       curr_vr_transferfunction->SetName(stored_transfer_functions[curr_transferfunction_index].name);
-  
+
       return true;
     }
     return false;
   }
-  
-  bool DataManager::SetTransferFunction (std::string name)
+
+  bool DataManager::SetTransferFunction(std::string name)
   {
     for (int i = 0; i < stored_transfer_functions.size(); i++)
     {
@@ -480,7 +483,7 @@ namespace vis
     return false;
   }
 
-  bool DataManager::SetCurrentTransferFunction (int id)
+  bool DataManager::SetCurrentTransferFunction(int id)
   {
     if (id < stored_transfer_functions.size())
     {
@@ -495,14 +498,14 @@ namespace vis
     }
     return false;
   }
-  
-  bool DataManager::UpdateStructuredGradientTexture ()
+
+  bool DataManager::UpdateStructuredGradientTexture()
   {
     DeleteGradientData();
     return GenerateStructuredGradientTexture();
   }
-  
-  int DataManager::GetCurrentGradientGenerationTypeID ()
+
+  int DataManager::GetCurrentGradientGenerationTypeID()
   {
     if (curr_vol_data_type == vis::GRID_VOLUME_DATA_TYPE::STRUCTURED)
     {
@@ -526,7 +529,7 @@ namespace vis
     return -1;
   }
 
-  int DataManager::GetGradientIndex (DataManager::STRUCTURED_GRADIENT_TYPE sgt)
+  int DataManager::GetGradientIndex(DataManager::STRUCTURED_GRADIENT_TYPE sgt)
   {
     if (curr_vol_data_type == vis::GRID_VOLUME_DATA_TYPE::STRUCTURED)
     {
@@ -542,7 +545,7 @@ namespace vis
     return -1;
   }
 
-  bool DataManager::SetCurrentGradient (int idx)
+  bool DataManager::SetCurrentGradient(int idx)
   {
     STRUCTURED_GRADIENT_TYPE sgt = STRUCTURED_GRADIENT_TYPE::NONE_GRADIENT;
     if (curr_vol_data_type == vis::GRID_VOLUME_DATA_TYPE::STRUCTURED)
@@ -556,12 +559,13 @@ namespace vis
     }
 
     bool ret = !(sgt == curr_gradient_comp_model);
-    if (ret) curr_gradient_comp_model = sgt;
-  
+    if (ret)
+      curr_gradient_comp_model = sgt;
+
     return ret;
   }
 
-  std::string DataManager::GetGradientName (DataManager::STRUCTURED_GRADIENT_TYPE sgt)
+  std::string DataManager::GetGradientName(DataManager::STRUCTURED_GRADIENT_TYPE sgt)
   {
     if (curr_vol_data_type == vis::GRID_VOLUME_DATA_TYPE::STRUCTURED)
     {
@@ -581,7 +585,7 @@ namespace vis
     return "None";
   }
 
-  std::string DataManager::CurrentGradientName ()
+  std::string DataManager::CurrentGradientName()
   {
     if (curr_vol_data_type == vis::GRID_VOLUME_DATA_TYPE::STRUCTURED)
     {
@@ -600,8 +604,8 @@ namespace vis
     }
     return "NULL";
   }
-  
-  std::vector<std::string> DataManager::GetGradientGenerationTypeStrList ()
+
+  std::vector<std::string> DataManager::GetGradientGenerationTypeStrList()
   {
     std::vector<std::string> vlist;
     vlist.push_back(GetGradientName(STRUCTURED_GRADIENT_TYPE::SOBEL_FELDMAN_FILTER));
@@ -611,7 +615,7 @@ namespace vis
     return vlist;
   }
 
-  std::vector<std::string>& DataManager::GetUINameDatasetList ()
+  std::vector<std::string> &DataManager::GetUINameDatasetList()
   {
 #ifdef USE_DATA_PROVIDER
     return m_data_provider->GetStructuredGridNameList();
@@ -620,99 +624,149 @@ namespace vis
 #endif
   }
 
-  gl::Texture3D* DataManager::GenerateGradientWithComputeShader ()
+  gl::Texture3D *DataManager::GenerateGradientWithComputeShader()
   {
     // Get Current Volume
-    vis::StructuredGridVolume* vol = GetCurrentStructuredVolume();
+    vis::StructuredGridVolume *vol = GetCurrentStructuredVolume();
 
     // Initialize compute shader
-    gl::ComputeShader* cpshader = new gl::ComputeShader();
-    cpshader->SetShaderFile(MAKE_STR(CMAKE_VOLVIS_UTILS_PATH_TO_SHADER)"/_gradient_shading/sobelfeldman_generator.comp");
+    gl::ComputeShader *cpshader = new gl::ComputeShader();
+    cpshader->SetShaderFile(MAKE_STR(CMAKE_VOLVIS_UTILS_PATH_TO_SHADER) "/_gradient_shading/sobelfeldman_generator.comp");
     cpshader->LoadAndLink();
     cpshader->Bind();
-    
+
     // Initialize 1-channel textures
-    gl::Texture3D* tex3d[3];
+    gl::Texture3D *tex3d[3];
     for (int i = 0; i < 3; i++)
     {
       tex3d[i] = new gl::Texture3D(vol->GetWidth(), vol->GetHeight(), vol->GetDepth());
       tex3d[i]->GenerateTexture(GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
       tex3d[i]->SetData(NULL, GL_R16F, GL_RED, GL_FLOAT);
-    
+
       glActiveTexture(GL_TEXTURE0 + i);
       glBindTexture(GL_TEXTURE_3D, tex3d[i]->GetTextureID());
     }
-    
+
     // Bind 1-channel textures
     for (int i = 0; i < 3; i++)
       glBindImageTexture(i, tex3d[i]->GetTextureID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R16F);
-    
+
     // Bind volume and volume dimensions
     cpshader->SetUniformTexture3D("TexVolume", GetCurrentVolumeTexture()->GetTextureID(), 3);
     cpshader->BindUniform("TexVolume");
-    
+
     cpshader->SetUniform("VolumeDimensions", glm::vec3(vol->GetWidth(), vol->GetHeight(), vol->GetDepth()));
     cpshader->BindUniform("VolumeDimensions");
-    
+
     // Compute the number of groups and dispatch
     cpshader->RecomputeNumberOfGroups(vol->GetWidth(), vol->GetHeight(), vol->GetDepth());
     cpshader->Dispatch();
-    
+
     // Delete compute shader
     cpshader->Unbind();
     delete cpshader;
-    
+
     // Initialize Red Data
-    GLfloat* red_data = new GLfloat[vol->GetWidth() * vol->GetHeight() * vol->GetDepth()];
+    GLfloat *red_data = new GLfloat[vol->GetWidth() * vol->GetHeight() * vol->GetDepth()];
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_3D, tex3d[0]->GetTextureID());
     glGetTexImage(GL_TEXTURE_3D, 0, GL_RED, GL_FLOAT, red_data);
     glBindTexture(GL_TEXTURE_3D, 0);
-    
+
     // Initialize Green Data
-    GLfloat* green_data = new GLfloat[vol->GetWidth() * vol->GetHeight() * vol->GetDepth()];
+    GLfloat *green_data = new GLfloat[vol->GetWidth() * vol->GetHeight() * vol->GetDepth()];
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_3D, tex3d[1]->GetTextureID());
     glGetTexImage(GL_TEXTURE_3D, 0, GL_RED, GL_FLOAT, green_data);
     glBindTexture(GL_TEXTURE_3D, 0);
-    
+
     // Initialize Blue Data
-    GLfloat* blue_data = new GLfloat[vol->GetWidth() * vol->GetHeight() * vol->GetDepth()];
+    GLfloat *blue_data = new GLfloat[vol->GetWidth() * vol->GetHeight() * vol->GetDepth()];
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_3D, tex3d[2]->GetTextureID());
     glGetTexImage(GL_TEXTURE_3D, 0, GL_RED, GL_FLOAT, blue_data);
     glBindTexture(GL_TEXTURE_3D, 0);
-    
+
     // Delete 1-channel textures
     for (int i = 0; i < 3; i++)
       delete tex3d[i];
-    
+
     // Initialize RGB Gradient Values Array
-    GLfloat* gradient_values = new GLfloat[vol->GetWidth() * vol->GetHeight() * vol->GetDepth() * 3];
+    GLfloat *gradient_values = new GLfloat[vol->GetWidth() * vol->GetHeight() * vol->GetDepth() * 3];
     for (int i = 0; i < vol->GetWidth() * vol->GetHeight() * vol->GetDepth(); i++)
     {
       gradient_values[i * 3 + 0] = red_data[i];
       gradient_values[i * 3 + 1] = green_data[i];
       gradient_values[i * 3 + 2] = blue_data[i];
     }
-    
+
     // Delete Red Data
     delete[] red_data;
-    
+
     // Delete Green Data
     delete[] green_data;
-    
+
     // Delete Blue Data
     delete[] blue_data;
-    
+
     // Generate a new terxture and set the gradient values [red, green, blue]
-    gl::Texture3D* tex3d_gradient = new gl::Texture3D(vol->GetWidth(), vol->GetHeight(), vol->GetDepth());
+    gl::Texture3D *tex3d_gradient = new gl::Texture3D(vol->GetWidth(), vol->GetHeight(), vol->GetDepth());
     tex3d_gradient->GenerateTexture(GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
-    tex3d_gradient->SetData((GLvoid*)gradient_values, GL_RGB16F, GL_RGB, GL_FLOAT);
-    
+    tex3d_gradient->SetData((GLvoid *)gradient_values, GL_RGB16F, GL_RGB, GL_FLOAT);
+
     // Delete RGB Gradient Values Array
     delete[] gradient_values;
-  
+
     return tex3d_gradient;
+  }
+
+  // Segments stuff
+
+  gl::Texture3D *DataManager::GetCurrentImportances()
+  {
+
+    return curr_importances;
+  }
+
+  void DataManager::SetCurrentImportances(uint8_t *importances, int width, int height, int depth)
+  {
+
+    gl::Texture3D *importances_gl = new gl::Texture3D(width, height, depth);
+    importances_gl->GenerateTexture(GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+    importances_gl->SetData((GLvoid *)importances, GL_R8, GL_RED, GL_UNSIGNED_BYTE);
+
+    curr_importances = importances_gl;
+    curr_importances_width = width;
+    curr_importances_height = height;
+    curr_importances_depth = depth;
+  }
+
+  // 256x256x178
+  void DataManager::LoadImportances(uint8_t *importances, int width, int height, int depth)
+  {
+
+    // Open the binary file for reading
+    std::ifstream file("D:/cpp_volume_rendering/data/Segmented/Segmentation_1_out.seg.nrrd", std::ios::binary);
+
+    if (!file.is_open())
+    {
+      std::cerr << "Error opening file" << std::endl;
+      exit(1);
+    }
+
+    // Allocate memory for the array in C++
+    uint8_t *data_array_cplusplus = new uint8_t[width * height * depth];
+
+    // Read the binary data into the array
+    file.read(reinterpret_cast<char *>(data_array_cplusplus), sizeof(uint8_t) * width * height * depth);
+
+    // Close the file
+    file.close();
+
+    // Now, 'data_array_cplusplus' contains the data read from the file
+    // ...
+
+    // Don't forget to free the allocated memory
+    // delete[] data_array_cplusplus;
   }
 }

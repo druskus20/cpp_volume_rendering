@@ -15,25 +15,23 @@
 #include "imgui_impl_glut.h"
 #include "imgui_impl_opengl2.h"
 
-RayCasting1Pass::RayCasting1Pass ()
-  : m_glsl_transfer_function(nullptr)
-  , cp_shader_rendering(nullptr)
-  , m_u_step_size(0.5f)
-  , m_apply_gradient_shading(false)
+RayCasting1Pass::RayCasting1Pass()
+    : m_glsl_transfer_function(nullptr), cp_shader_rendering(nullptr), m_u_step_size(0.5f), m_apply_gradient_shading(false)
 {
 #ifdef MULTISAMPLE_AVAILABLE
   vr_pixel_multiscaling_support = true;
 #endif
 }
 
-RayCasting1Pass::~RayCasting1Pass ()
+RayCasting1Pass::~RayCasting1Pass()
 {
   Clean();
 }
 
-void RayCasting1Pass::Clean ()
+void RayCasting1Pass::Clean()
 {
-  if (m_glsl_transfer_function) delete m_glsl_transfer_function;
+  if (m_glsl_transfer_function)
+    delete m_glsl_transfer_function;
   m_glsl_transfer_function = nullptr;
 
   DestroyRenderingPass();
@@ -41,23 +39,25 @@ void RayCasting1Pass::Clean ()
   BaseVolumeRenderer::Clean();
 }
 
-void RayCasting1Pass::ReloadShaders ()
+void RayCasting1Pass::ReloadShaders()
 {
   cp_shader_rendering->Reload();
   m_rdr_frame_to_screen.ClearShaders();
 }
 
-bool RayCasting1Pass::Init (int swidth, int sheight)
+bool RayCasting1Pass::Init(int swidth, int sheight)
 {
-  if (IsBuilt()) Clean();
+  if (IsBuilt())
+    Clean();
 
-  if (m_ext_data_manager->GetCurrentVolumeTexture() == nullptr) return false;
+  if (m_ext_data_manager->GetCurrentVolumeTexture() == nullptr)
+    return false;
   m_glsl_transfer_function = m_ext_data_manager->GetCurrentTransferFunction()->GenerateTexture_1D_RGBt();
-  
+
   // Create Rendering Buffers and Shaders
   CreateRenderingPass();
   gl::ExitOnGLError("RayCasting1Pass: Error on Preparing Models and Shaders");
-  
+
   // estimate initial integration step
   glm::dvec3 sv = m_ext_data_manager->GetCurrentStructuredVolume()->GetScale();
   m_u_step_size = float((0.5f / glm::sqrt(3.0f)) * glm::sqrt(sv.x * sv.x + sv.y * sv.y + sv.z * sv.z));
@@ -69,7 +69,7 @@ bool RayCasting1Pass::Init (int swidth, int sheight)
   return true;
 }
 
-bool RayCasting1Pass::Update (vis::Camera* camera)
+bool RayCasting1Pass::Update(vis::Camera *camera)
 {
   cp_shader_rendering->Bind();
 
@@ -137,7 +137,7 @@ bool RayCasting1Pass::Update (vis::Camera* camera)
   return true;
 }
 
-void RayCasting1Pass::Redraw ()
+void RayCasting1Pass::Redraw()
 {
   m_rdr_frame_to_screen.ClearTexture();
 
@@ -146,11 +146,11 @@ void RayCasting1Pass::Redraw ()
 
   cp_shader_rendering->Dispatch();
   gl::ComputeShader::Unbind();
- 
+
   m_rdr_frame_to_screen.Draw();
 }
 
-void RayCasting1Pass::MultiSampleRedraw ()
+void RayCasting1Pass::MultiSampleRedraw()
 {
   m_rdr_frame_to_screen.ClearTexture();
 
@@ -163,7 +163,7 @@ void RayCasting1Pass::MultiSampleRedraw ()
   m_rdr_frame_to_screen.DrawMultiSampleHigherResolutionMode();
 }
 
-void RayCasting1Pass::DownScalingRedraw ()
+void RayCasting1Pass::DownScalingRedraw()
 {
   m_rdr_frame_to_screen.ClearTexture();
 
@@ -176,7 +176,7 @@ void RayCasting1Pass::DownScalingRedraw ()
   m_rdr_frame_to_screen.DrawHigherResolutionWithDownScale();
 }
 
-void RayCasting1Pass::UpScalingRedraw ()
+void RayCasting1Pass::UpScalingRedraw()
 {
   m_rdr_frame_to_screen.ClearTexture();
 
@@ -189,18 +189,18 @@ void RayCasting1Pass::UpScalingRedraw ()
   m_rdr_frame_to_screen.DrawLowerResolutionWithUpScale();
 }
 
-void RayCasting1Pass::SetImGuiComponents ()
+void RayCasting1Pass::SetImGuiComponents()
 {
   ImGui::Separator();
   ImGui::Text("Step Size: ");
   if (ImGui::DragFloat("###RayCasting1PassUIIntegrationStepSize", &m_u_step_size, 0.01f, 0.01f, 100.0f, "%.2f"))
   {
-    m_u_step_size = std::max(std::min(m_u_step_size, 100.0f), 0.01f); //When entering with keyboard, ImGui does not take care of this.
+    m_u_step_size = std::max(std::min(m_u_step_size, 100.0f), 0.01f); // When entering with keyboard, ImGui does not take care of this.
     SetOutdated();
   }
-  
+
   AddImGuiMultiSampleOptions();
-  
+
   if (m_ext_data_manager->GetCurrentGradientTexture())
   {
     ImGui::Separator();
@@ -222,27 +222,27 @@ void RayCasting1Pass::SetImGuiComponents ()
   }
 }
 
-void RayCasting1Pass::FillParameterSpace(ParameterSpace& pspace)
+void RayCasting1Pass::FillParameterSpace(ParameterSpace &pspace)
 {
   pspace.ClearParameterDimensions();
   pspace.AddParameterDimension(new ParameterRangeFloat("StepSize", &m_u_step_size, 0.2, 2.0, 0.1));
 }
 
-void RayCasting1Pass::CreateRenderingPass ()
+void RayCasting1Pass::CreateRenderingPass()
 {
-  glm::vec3 vol_resolution = glm::vec3(m_ext_data_manager->GetCurrentStructuredVolume()->GetWidth() ,
+  glm::vec3 vol_resolution = glm::vec3(m_ext_data_manager->GetCurrentStructuredVolume()->GetWidth(),
                                        m_ext_data_manager->GetCurrentStructuredVolume()->GetHeight(),
-                                       m_ext_data_manager->GetCurrentStructuredVolume()->GetDepth() );
+                                       m_ext_data_manager->GetCurrentStructuredVolume()->GetDepth());
 
   glm::vec3 vol_voxelsize = glm::vec3(m_ext_data_manager->GetCurrentStructuredVolume()->GetScaleX(),
                                       m_ext_data_manager->GetCurrentStructuredVolume()->GetScaleY(),
                                       m_ext_data_manager->GetCurrentStructuredVolume()->GetScaleZ());
 
   glm::vec3 vol_aabb = vol_resolution * vol_voxelsize;
- 
+
   cp_shader_rendering = new gl::ComputeShader();
-  cp_shader_rendering->AddShaderFile(CPPVOLREND_DIR"structured/_common_shaders/ray_bbox_intersection.comp");
-  cp_shader_rendering->AddShaderFile(CPPVOLREND_DIR"structured/rc1pass/ray_marching_1p.comp");
+  cp_shader_rendering->AddShaderFile(CPPVOLREND_DIR "structured/_common_shaders/ray_bbox_intersection.comp");
+  cp_shader_rendering->AddShaderFile(CPPVOLREND_DIR "structured/rc1pass/ray_marching_1p.comp");
   cp_shader_rendering->LoadAndLink();
   cp_shader_rendering->Bind();
 
@@ -250,8 +250,12 @@ void RayCasting1Pass::CreateRenderingPass ()
     cp_shader_rendering->SetUniformTexture3D("TexVolume", m_ext_data_manager->GetCurrentVolumeTexture()->GetTextureID(), 1);
   if (m_glsl_transfer_function)
     cp_shader_rendering->SetUniformTexture1D("TexTransferFunc", m_glsl_transfer_function->GetTextureID(), 2);
+
   if (m_apply_gradient_shading && m_ext_data_manager->GetCurrentGradientTexture())
     cp_shader_rendering->SetUniformTexture3D("TexVolumeGradient", m_ext_data_manager->GetCurrentGradientTexture()->GetTextureID(), 3);
+
+  cp_shader_rendering->SetUniformTexture3D("Importances", m_ext_data_manager->GetCurrentImportances()->GetTextureID(), 4);
+  cp_shader_rendering->SetUniform("ImportancesGridSize", glm::vec3(256, 256, 178));
 
   cp_shader_rendering->SetUniform("VolumeGridResolution", vol_resolution);
   cp_shader_rendering->SetUniform("VolumeVoxelSize", vol_voxelsize);
@@ -261,15 +265,16 @@ void RayCasting1Pass::CreateRenderingPass ()
   cp_shader_rendering->Unbind();
 }
 
-void RayCasting1Pass::DestroyRenderingPass ()
+void RayCasting1Pass::DestroyRenderingPass()
 {
-  if (cp_shader_rendering) delete cp_shader_rendering;
+  if (cp_shader_rendering)
+    delete cp_shader_rendering;
   cp_shader_rendering = nullptr;
 
   gl::ExitOnGLError("Could not destroy shaders");
 }
 
-void RayCasting1Pass::RecreateRenderingPass ()
+void RayCasting1Pass::RecreateRenderingPass()
 {
   DestroyRenderingPass();
   CreateRenderingPass();

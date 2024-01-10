@@ -4,13 +4,13 @@
  * . Faster when implemented with Compute Shader:
  *   . A Comparison between GPU-based Volume Ray Casting Implementations:
  *     Fragment Shader, Compute Shader, OpenCL, and CUDA
- *   . Francisco Sans, Rhadamés Carmona
+ *   . Francisco Sans, Rhadamï¿½s Carmona
  *   . CLEI Electronic Journal, Volume 20, Number 2, Paper 7, 2017
  *   . DOI: 10.19153/cleiej.20.2.7
  *
  * Leonardo Quatrin Campagnolo
  * . campagnolo.lq@gmail.com
-**/
+ **/
 #ifndef SINGLE_PASS_VOLUME_RENDERING_RAY_CASTING_H
 #define SINGLE_PASS_VOLUME_RENDERING_RAY_CASTING_H
 
@@ -32,49 +32,46 @@
 class RayCasting1Pass : public BaseVolumeRenderer
 {
 public:
-  RayCasting1Pass ();
-  virtual ~RayCasting1Pass ();
+  RayCasting1Pass();
+  virtual ~RayCasting1Pass();
 
   //////////////////////////////////////////
   // Virtual base functions
-  virtual const char* GetName () { return "1-Pass - Ray Casting"; }
-  virtual const char* GetAbbreviationName () { return "s_1rc"; }
+  virtual const char *GetName() { return "1-Pass - Ray Casting"; }
+  virtual const char *GetAbbreviationName() { return "s_1rc"; }
 
-  virtual void Clean ();
-  virtual void ReloadShaders ();
+  virtual void Clean();
+  virtual void ReloadShaders();
 
-  virtual bool Init (int shader_width, int shader_height);
-  virtual bool Update (vis::Camera* camera);
-  virtual void Redraw ();
-  virtual void MultiSampleRedraw ();
-  virtual void DownScalingRedraw ();
-  virtual void UpScalingRedraw ();
+  virtual bool Init(int shader_width, int shader_height);
+  virtual bool Update(vis::Camera *camera);
+  virtual void Redraw();
+  virtual void MultiSampleRedraw();
+  virtual void DownScalingRedraw();
+  virtual void UpScalingRedraw();
 
-  virtual void SetImGuiComponents ();
+  virtual void SetImGuiComponents();
 
-  virtual vis::GRID_VOLUME_DATA_TYPE GetDataTypeSupport ()
+  virtual vis::GRID_VOLUME_DATA_TYPE GetDataTypeSupport()
   {
     return vis::GRID_VOLUME_DATA_TYPE::STRUCTURED;
   }
 
-  virtual void FillParameterSpace(ParameterSpace& pspace) override;
+  virtual void FillParameterSpace(ParameterSpace &pspace) override;
 
   float m_u_step_size;
 
 protected:
-
 private:
-  void CreateRenderingPass ();
-  void DestroyRenderingPass ();
-  void RecreateRenderingPass ();
-  
-  gl::Texture1D* m_glsl_transfer_function;
+  void CreateRenderingPass();
+  void DestroyRenderingPass();
+  void RecreateRenderingPass();
 
-  gl::ComputeShader*  cp_shader_rendering;
+  gl::Texture1D *m_glsl_transfer_function;
 
+  gl::ComputeShader *cp_shader_rendering;
 
   bool m_apply_gradient_shading;
-  
 };
 
 #endif
