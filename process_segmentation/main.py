@@ -43,8 +43,7 @@ print("fragment of segmented voxels: ", total / total_voxels)
 import numpy as np
 
 # Assuming you have a NumPy array named 'data_array'
-data_array = np.array(extracted_voxels)
-data_array = np.random.randint(4, size=(256, 256, 178), dtype=np.uint8)
+data_array = np.array(extracted_voxels, dtype=np.uint8)
 
 
 # convert to array of bytes, since our numbers are small enough
