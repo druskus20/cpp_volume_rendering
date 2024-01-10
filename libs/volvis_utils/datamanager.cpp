@@ -728,12 +728,12 @@ namespace vis
     return curr_importances;
   }
 
-  void DataManager::SetCurrentImportances(uint8_t *importances, int width, int height, int depth)
+  void DataManager::SetCurrentImportances(GLfloat *importances, int width, int height, int depth)
   {
 
     gl::Texture3D *importances_gl = new gl::Texture3D(width, height, depth);
     importances_gl->GenerateTexture(GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
-    importances_gl->SetData((GLvoid *)importances, GL_R8, GL_RED, GL_UNSIGNED_BYTE);
+    importances_gl->SetData((GLvoid *)importances, GL_R8, GL_RED, GL_FLOAT);
 
     curr_importances = importances_gl;
     curr_importances_width = width;
@@ -754,11 +754,62 @@ namespace vis
       exit(1);
     }
 
-    // Allocate memory for the array in C++
-    uint8_t *data_array_cplusplus = new uint8_t[width * height * depth];
-
     // Read the binary data into the array
-    file.read(reinterpret_cast<char *>(data_array_cplusplus), sizeof(uint8_t) * width * height * depth);
+    file.read(reinterpret_cast<char *>(importances), sizeof(uint8_t) * width * height * depth);
+
+    std::cout << "Size of uint8_t: " << sizeof(uint8_t) << std::endl;
+    std::cout << "Size of char: " << sizeof(char) << std::endl;
+
+    // Count occurrences of each value
+    int count_0 = 0, count_1 = 0, count_2 = 0, count_3 = 0, count_4 = 0;
+    int unique_values[5] = {0}; // To store counts of different values
+
+    for (int i = 0; i < width * height * depth; ++i)
+    {
+      switch (importances[i])
+      {
+      case 0:
+        count_0++;
+        break;
+      case 1:
+        count_1++;
+        break;
+      case 2:
+        count_2++;
+        break;
+      case 3:
+        count_3++;
+        break;
+      case 4:
+        count_4++;
+        break;
+      default:
+        // Handle unexpected values
+        break;
+      }
+
+      // Track unique values
+      unique_values[importances[i]]++;
+    }
+
+    // Print counts
+    printf("Count of 0s: %d\n", count_0);
+    printf("Count of 1s: %d\n", count_1);
+    printf("Count of 2s: %d\n", count_2);
+    printf("Count of 3s: %d\n", count_3);
+    printf("Count of 4s: %d\n", count_4);
+    printf("Total size: %d\n", count_0 + count_1 + count_2 + count_3 + count_4);
+
+    // Print number of different values
+    int num_different_values = 0;
+    for (int i = 0; i < 5; ++i)
+    {
+      if (unique_values[i] > 0)
+      {
+        num_different_values++;
+      }
+    }
+    printf("Number of different values: %d\n", num_different_values);
 
     // Close the file
     file.close();

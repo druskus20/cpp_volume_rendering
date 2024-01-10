@@ -8,7 +8,7 @@ layout (binding = 4) uniform sampler3D Importances;
 uniform vec3 VolumeGridResolution;
 uniform vec3 VolumeVoxelSize;
 uniform vec3 VolumeGridSize;
-uniform vec3 ImportancesGridSize;
+uniform vec3 ImportancesGridSize; 
 
 uniform vec3 CameraEye;
 
@@ -114,71 +114,74 @@ void main ()
       float D = abs(tfar - tnear);
 
       // Initialize Transparency and Radiance color
-#ifdef USE_TRANSPARENCY
-      vec4 dst = vec4(vec3(0.0),1.0);
-#else
-      vec4 dst = vec4(0.0);
-#endif
+
 
       // World position at tnear, translated to the volume [0, VolumeGridSize]
       vec3 wld_pos = r.Origin + r.Dir * tnear;
       // Texture position
       vec3 tex_pos = wld_pos + (VolumeGridSize * 0.5);
+      vec3 imp_pos = wld_pos + (ImportancesGridSize * 0.5);
       
+      float min_importance = 10;
+
+
       // Evaluate from 0 to D...
       for(float s = 0.0; s < D;)
       {
         // Get the current step or the remaining interval
         float h = min(StepSize, D - s);
+         h= StepSize;
       
         // Texture position at tnear + (s + h/2)
         vec3 s_tex_pos = tex_pos  + r.Dir * (s + h * 0.5);
+        vec3 s_imp_pos = imp_pos  + r.Dir * (s + h * 0.5);
       
         // Get normalized density from volume
         float density = texture(TexVolume, s_tex_pos / VolumeGridSize).r;
         
-        // Get color from transfer function given the normalized density
-        vec4 src = 
-          //vec4(density)
-          texture(TexTransferFunc, density)
-        ;
-       
-        // if sample is non-transparent
-        if(src.a > 0.0)
-        {
-          // Apply gradient, if enabled
-          if(ApplyGradientPhongShading == 1)
-            src.rgb = ShadeBlinnPhong(s_tex_pos, src.rgb);
+      
+        
 
-#ifdef USE_TRANSPARENCY
-  #ifdef USE_TRANSPARENCY_DS
-          dst.rgb = dst.rgb + dst.a * src.a * src.rgb * h;
-          dst.a = dst.a * exp(-src.a * h);
-  #else
-          float F = exp(-src.a * h);
-          dst.rgb = dst.rgb + dst.a * src.rgb * (1.0 - F);
-          dst.a = dst.a * F;
-  #endif
-          if ((1.0 - dst.a) > 0.99) break;
-#else
-          // Evaluate the current opacity
-          src.a = 1.0 - exp(-src.a * h);
-          
-          // Front-to-back composition
-          src.rgb = src.rgb * src.a;
-          dst = dst + (1.0 - dst.a) * src;
-          
-          // Opacity threshold: 99%
-          if (dst.a > 0.99) break;
-#endif
+        // Sample the importances scalar field
+        float importance = texture(Importances, s_imp_pos / ImportancesGridSize ).r;
+        if (importance == 1.0) 
+        {
+          min_importance = importance;
+          break;
         }
+        if (importance == 2.0) 
+        {
+          min_importance = importance;
+          break;
+        }
+        if (importance == 3.0) 
+        {
+          min_importance = importance;
+          break;
+        }
+
+       
         // Go to the next interval
         s = s + h;
       }
-#ifdef USE_TRANSPARENCY
-      dst.a = 1.0 - dst.a;
-#endif
-      imageStore(OutputFrag, storePos, dst);
+
+      //imageStore(OutputFrag, storePos, dst);
+
+      if (min_importance == 0.0) {
+          imageStore(OutputFrag, storePos, vec4(0.0, 0.0, 0.0, 1.0));
+      }
+      else if (min_importance == 1.0) {
+          imageStore(OutputFrag, storePos, vec4(1.0, 1.0, 0.0, 1.0));
+      }
+      else if (min_importance == 2.0) {
+          imageStore(OutputFrag, storePos, vec4(0.0, 1.0, 0.0, 1.0));
+      }
+      else if (min_importance == 3.0) {
+          imageStore(OutputFrag, storePos, vec4(0.0, 0.0, 1.0, 1.0));
+      }
+      else {
+          imageStore(OutputFrag, storePos, vec4(0.0, 1.0, 1.0, 1.0));
+      }
     }
   }
 }

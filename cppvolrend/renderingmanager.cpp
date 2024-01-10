@@ -1104,10 +1104,69 @@ void RenderingManager::SetImGuiInterface()
       int width = 256;
       int height = 256;
       int depth = 178;
-      uint8_t *importances = nullptr;
 
+      // Allocate memory for the array in C++
+      uint8_t *importances = new uint8_t[width * height * depth];
+      std::cout << "Importances: " << width << " " << height << " " << depth << std::endl;
       m_data_mgr.LoadImportances(importances, width, height, depth);
-      m_data_mgr.SetCurrentImportances(importances, width, height, depth);
+      std::cout << "Importances: " << width << " " << height << " " << depth << std::endl;
+
+      // convert array to glfloat
+
+      // Allocate memory for the GLfloat array in C
+      GLfloat *float_array = (GLfloat *)malloc(sizeof(GLfloat) * width * height * depth);
+
+      // Convert uint8_t array to GLfloat array
+      for (int i = 0; i < width * height * depth; ++i)
+      {
+        float_array[i] = static_cast<GLfloat>(importances[i]);
+      }
+
+      int count_0 = 0, count_1 = 0, count_2 = 0, count_3 = 0, count_4 = 0;
+      int unique_values[5] = {0}; // To store counts of different values
+      for (int i = 0; i < width * height * depth; ++i)
+      {
+        if (float_array[i] == 0.0)
+        {
+          count_0++;
+        }
+        else if (float_array[i] == 1.0)
+        {
+          count_1++;
+        }
+        else if (float_array[i] == 2.0)
+        {
+          count_2++;
+        }
+        else if (float_array[i] == 3.0)
+        {
+          count_3++;
+        }
+
+        // Track unique values
+        unique_values[importances[i]]++;
+      }
+
+      // Print counts
+      printf("Count of 0s: %d\n", count_0);
+      printf("Count of 1s: %d\n", count_1);
+      printf("Count of 2s: %d\n", count_2);
+      printf("Count of 3s: %d\n", count_3);
+      printf("Count of 4s: %d\n", count_4);
+      printf("Total size: %d\n", count_0 + count_1 + count_2 + count_3 + count_4);
+
+      // Print number of different values
+      int num_different_values = 0;
+      for (int i = 0; i < 5; ++i)
+      {
+        if (unique_values[i] > 0)
+        {
+          num_different_values++;
+        }
+      }
+      printf("Number of different values: %d\n", num_different_values);
+
+      m_data_mgr.SetCurrentImportances(float_array, width, height, depth);
     }
 
     ImGui::Separator();

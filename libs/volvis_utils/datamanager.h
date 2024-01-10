@@ -126,7 +126,7 @@ namespace vis
 
     gl::Texture3D *GetCurrentImportances();
 
-    void SetCurrentImportances(uint8_t *importances, int width, int height, int depth);
+    void SetCurrentImportances(GLfloat *importances, int width, int height, int depth);
 
     void LoadImportances(uint8_t *importances, int width, int height, int depth);
 
