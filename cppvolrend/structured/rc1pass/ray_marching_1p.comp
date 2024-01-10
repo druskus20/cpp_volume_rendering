@@ -3,10 +3,12 @@
 layout (binding = 1) uniform sampler3D TexVolume; 
 layout (binding = 2) uniform sampler1D TexTransferFunc;
 layout (binding = 3) uniform sampler3D TexVolumeGradient;
+layout (binding = 4) uniform sampler3D Importances;
 
 uniform vec3 VolumeGridResolution;
 uniform vec3 VolumeVoxelSize;
 uniform vec3 VolumeGridSize;
+uniform vec3 ImportancesGridSize;
 
 uniform vec3 CameraEye;
 
@@ -84,6 +86,9 @@ vec3 ShadeBlinnPhong (vec3 Tpos, vec3 clr)
 //#define USE_TRANSPARENCY_DS
 void main ()
 {
+
+
+
   ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
   
   ivec2 size = imageSize(OutputFrag);
