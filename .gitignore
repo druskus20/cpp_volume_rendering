@@ -4,3 +4,4 @@ bin/
 data/eval*
 build
 env
+CMakeFiles
