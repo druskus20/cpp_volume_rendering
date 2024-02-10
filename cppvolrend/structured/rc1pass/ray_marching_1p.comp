@@ -138,9 +138,6 @@ void main ()
       
         // Get normalized density from volume
         float density = texture(TexVolume, s_tex_pos / VolumeGridSize).r;
-        
-      
-        
 
         // Sample the importances scalar field
         float importance = texture(Importances, s_imp_pos / ImportancesGridSize ).r;
@@ -168,20 +165,22 @@ void main ()
       //imageStore(OutputFrag, storePos, dst);
 
       if (min_importance == 0.0) {
-          imageStore(OutputFrag, storePos, vec4(0.0, 0.0, 0.0, 1.0));
+          imageStore(OutputFrag, storePos, vec4(0.0, 0.0, 0.0, 1.0)); // black
       }
       else if (min_importance == 1.0) {
-          imageStore(OutputFrag, storePos, vec4(1.0, 1.0, 0.0, 1.0));
+          imageStore(OutputFrag, storePos, vec4(1.0, 1.0, 0.0, 1.0)); // yellow
       }
       else if (min_importance == 2.0) {
-          imageStore(OutputFrag, storePos, vec4(0.0, 1.0, 0.0, 1.0));
+          imageStore(OutputFrag, storePos, vec4(0.0, 1.0, 0.0, 1.0)); // green
       }
       else if (min_importance == 3.0) {
-          imageStore(OutputFrag, storePos, vec4(0.0, 0.0, 1.0, 1.0));
+          imageStore(OutputFrag, storePos, vec4(0.0, 0.0, 1.0, 1.0)); // blue
       }
       else {
-          imageStore(OutputFrag, storePos, vec4(0.0, 1.0, 1.0, 1.0));
+          imageStore(OutputFrag, storePos, vec4(0.0, 1.0, 1.0, 1.0)); // cyan
       }
+
+
     }
   }
 }

@@ -5,28 +5,30 @@
 #include <random>
 #include <fstream>
 
-#define TEXTURE_FILTER GL_LINEAR        // GL_NEAREST         //
-#define TEXTURE_WRAP   GL_CLAMP_TO_EDGE // GL_CLAMP_TO_BORDER // 
+#define TEXTURE_FILTER GL_LINEAR      // GL_NEAREST         //
+#define TEXTURE_WRAP GL_CLAMP_TO_EDGE // GL_CLAMP_TO_BORDER //
 
 namespace vis
 {
-  struct GLFloat4 {
+  struct GLFloat4
+  {
     GLfloat r;
     GLfloat g;
     GLfloat b;
     GLfloat a;
   };
 
-  gl::Texture3D* GenerateRTexture(StructuredGridVolume* vol, int init_x, int init_y, int init_z,
-    int last_x, int last_y, int last_z)
+  gl::Texture3D *GenerateRTexture(StructuredGridVolume *vol, int init_x, int init_y, int init_z,
+                                  int last_x, int last_y, int last_z)
   {
-    if (!vol) return NULL;
+    if (!vol)
+      return NULL;
 
     int size_x = abs(last_x - init_x);
     int size_y = abs(last_y - init_y);
     int size_z = abs(last_z - init_z);
 
-    GLfloat* scalar_values = new GLfloat[size_x*size_y*size_z];
+    GLfloat *scalar_values = new GLfloat[size_x * size_y * size_z];
 
     for (int k = 0; k < size_z; k++)
     {
@@ -39,7 +41,7 @@ namespace vis
       }
     }
 
-    gl::Texture3D* tex3d_r = new gl::Texture3D(size_x, size_y, size_z);
+    gl::Texture3D *tex3d_r = new gl::Texture3D(size_x, size_y, size_z);
 
     tex3d_r->GenerateTexture(TEXTURE_FILTER, TEXTURE_FILTER, TEXTURE_WRAP, TEXTURE_WRAP, TEXTURE_WRAP);
 
@@ -55,20 +57,21 @@ namespace vis
     return tex3d_r;
   }
 
-  gl::Texture3D* GenerateRTexture (StructuredGridVolume* vol, VIS_UTILS_DATA_TYPE vdatatype)
+  gl::Texture3D *GenerateRTexture(StructuredGridVolume *vol, VIS_UTILS_DATA_TYPE vdatatype)
   {
-    if (!vol) return NULL;
+    if (!vol)
+      return NULL;
 
     int size_x = vol->GetWidth();
     int size_y = vol->GetHeight();
     int size_z = vol->GetDepth();
-    
-    gl::Texture3D* tex3d_r = new gl::Texture3D(size_x, size_y, size_z);
+
+    gl::Texture3D *tex3d_r = new gl::Texture3D(size_x, size_y, size_z);
 
     if (vdatatype == VIS_UTILS_DATA_TYPE::UNSIGNED_BYTE)
     {
-      GLubyte* scalar_values = new GLubyte[size_x*size_y*size_z];
-      
+      GLubyte *scalar_values = new GLubyte[size_x * size_y * size_z];
+
       for (int k = 0; k < size_z; k++)
       {
         for (int j = 0; j < size_y; j++)
@@ -85,7 +88,7 @@ namespace vis
     }
     else if (vdatatype == VIS_UTILS_DATA_TYPE::UNSIGNED_SHORT)
     {
-      GLushort* scalar_values = new GLushort[size_x*size_y*size_z];
+      GLushort *scalar_values = new GLushort[size_x * size_y * size_z];
 
       for (int k = 0; k < size_z; k++)
       {
@@ -103,7 +106,7 @@ namespace vis
     }
     else if (vdatatype == VIS_UTILS_DATA_TYPE::HALF_FLOAT)
     {
-      GLfloat* scalar_values = new GLfloat[size_x*size_y*size_z];
+      GLfloat *scalar_values = new GLfloat[size_x * size_y * size_z];
 
       for (int k = 0; k < size_z; k++)
       {
@@ -121,7 +124,7 @@ namespace vis
     }
     else if (vdatatype == VIS_UTILS_DATA_TYPE::FLOAT)
     {
-      GLfloat* scalar_values = new GLfloat[size_x*size_y*size_z];
+      GLfloat *scalar_values = new GLfloat[size_x * size_y * size_z];
 
       for (int k = 0; k < size_z; k++)
       {
@@ -143,19 +146,65 @@ namespace vis
     return tex3d_r;
   }
 
-  gl::Texture3D* GenerateGradientTexture(StructuredGridVolume* vol, int gradient_sample_size,
-    int filter_nxnxn, bool normalized_gradient,
-    int init_x, int init_y, int init_z,
-    int last_x, int last_y, int last_z)
+  gl::Texture3D *GenerateRImportancesTexture(GLfloat *importances, int init_x, int init_y, int init_z,
+                                             int last_x, int last_y, int last_z)
+
+  {
+    if (!importances)
+      return NULL;
+
+    int size_x = abs(last_x - init_x);
+    int size_y = abs(last_y - init_y);
+    int size_z = abs(last_z - init_z);
+
+    GLfloat *scalar_values = new GLfloat[size_x * size_y * size_z];
+
+    for (int k = 0; k < size_z; k++)
+    {
+      for (int j = 0; j < size_y; j++)
+      {
+        for (int i = 0; i < size_x; i++)
+        {
+          int x = i + init_x;
+          int y = j + init_y;
+          int z = k + init_z;
+          // reference double normalized_sample = (double)importances[x + (y * GetWidth()) + (z * GetWidth() * GetHeight())] / (1.0);
+          double normalized_sample = (double)importances[x + (y * size_x) + (z * size_x * size_y)] / (1.0);
+          // reference scalar_values[i + (j * size_x) + (k * size_x * size_y)] = (GLfloat)importances->GetNormalizedSample((i + init_x), (j + init_y), (k + init_z));
+          scalar_values[i + (j * size_x) + (k * size_x * size_y)] = (GLfloat)normalized_sample;
+        }
+      }
+    }
+
+    gl::Texture3D *tex3d_r = new gl::Texture3D(size_x, size_y, size_z);
+
+    tex3d_r->GenerateTexture(TEXTURE_FILTER, TEXTURE_FILTER, TEXTURE_WRAP, TEXTURE_WRAP, TEXTURE_WRAP);
+
+#ifdef USE_16F_INTERNAL_FORMAT
+    tex3d_r->SetData(scalar_values, GL_R16F, GL_RED, GL_FLOAT);
+#else
+    tex3d_r->SetData(scalar_values, GL_R32F, GL_RED, GL_FLOAT);
+#endif
+    gl::ExitOnGLError("ERROR: After SetData");
+
+    delete[] scalar_values;
+
+    return tex3d_r;
+  }
+
+  gl::Texture3D *GenerateGradientTexture(StructuredGridVolume *vol, int gradient_sample_size,
+                                         int filter_nxnxn, bool normalized_gradient,
+                                         int init_x, int init_y, int init_z,
+                                         int last_x, int last_y, int last_z)
   {
     int width = vol->GetWidth();
     int height = vol->GetHeight();
     int depth = vol->GetDepth();
 
-    //1
-    //Generation of gradients
+    // 1
+    // Generation of gradients
     int n = gradient_sample_size;
-    glm::dvec3* gradients = new glm::dvec3[width * height * depth];
+    glm::dvec3 *gradients = new glm::dvec3[width * height * depth];
     glm::dvec3 s1, s2;
     int index = 0;
     for (int z = 0; z < depth; z++)
@@ -186,7 +235,7 @@ namespace vis
 
           gradients[index] = s2s1;
 
-          if (gradients[index].x != gradients[index].x) //lm.IsNaN
+          if (gradients[index].x != gradients[index].x) // lm.IsNaN
             gradients[index] = glm::dvec3(0);
 
           index++;
@@ -194,8 +243,8 @@ namespace vis
       }
     }
 
-    //2
-    //Filtering
+    // 2
+    // Filtering
     n = filter_nxnxn;
     index = 0;
     if (n > 0)
@@ -235,11 +284,9 @@ namespace vis
       }
     }
 
-    //3
-    //Set the content of the gradient texture
-    if (init_x == -1 && last_x == -1
-      && init_y == -1 && last_y == -1
-      && init_z == -1 && last_z == -1)
+    // 3
+    // Set the content of the gradient texture
+    if (init_x == -1 && last_x == -1 && init_y == -1 && last_y == -1 && init_z == -1 && last_z == -1)
     {
       init_x = 0;
       init_y = 0;
@@ -253,7 +300,7 @@ namespace vis
     int size_x = abs(last_x - init_x);
     int size_y = abs(last_y - init_y);
     int size_z = abs(last_z - init_z);
-    glm::vec3* gradients_values = new glm::vec3[size_x*size_y*size_z];
+    glm::vec3 *gradients_values = new glm::vec3[size_x * size_y * size_z];
 
     for (int k = 0; k < size_z; k++)
     {
@@ -266,15 +313,15 @@ namespace vis
       }
     }
 
-    //4
-    //Creating Texture
-    gl::Texture3D* tex3d_gradient = new gl::Texture3D(size_x, size_y, size_z);
+    // 4
+    // Creating Texture
+    gl::Texture3D *tex3d_gradient = new gl::Texture3D(size_x, size_y, size_z);
     tex3d_gradient->GenerateTexture(TEXTURE_FILTER, TEXTURE_FILTER, TEXTURE_WRAP, TEXTURE_WRAP, TEXTURE_WRAP);
 
 #ifdef USE_16F_INTERNAL_FORMAT
-    tex3d_gradient->SetData((GLvoid*)gradients_values, GL_RGB16F, GL_RGB, GL_FLOAT);
+    tex3d_gradient->SetData((GLvoid *)gradients_values, GL_RGB16F, GL_RGB, GL_FLOAT);
 #else
-    tex3d_gradient->SetData((GLvoid*)gradients_values, GL_RGB32F, GL_RGB, GL_FLOAT);
+    tex3d_gradient->SetData((GLvoid *)gradients_values, GL_RGB32F, GL_RGB, GL_FLOAT);
 #endif
 
     delete[] gradients_values;
@@ -283,15 +330,15 @@ namespace vis
     return tex3d_gradient;
   }
 
-  // https://en.wikipedia.org/wiki/Sobel_operator  
-  gl::Texture3D* GenerateSobelFeldmanGradientTexture(StructuredGridVolume* vol)
+  // https://en.wikipedia.org/wiki/Sobel_operator
+  gl::Texture3D *GenerateSobelFeldmanGradientTexture(StructuredGridVolume *vol)
   {
     int width = vol->GetWidth();
     int height = vol->GetHeight();
     int depth = vol->GetDepth();
 
     int n = 1;
-    glm::dvec3* gradients = new glm::dvec3[width * height * depth];
+    glm::dvec3 *gradients = new glm::dvec3[width * height * depth];
     for (int z = 0; z < depth; z++)
     {
       for (int y = 0; y < height; y++)
@@ -303,14 +350,11 @@ namespace vis
           {
             for (int v2 = -1; v2 <= 1; v2++)
             {
-              sg.z += ((double)vol->GetNormalizedSample(x + v1, y + v2, z - 1)) * (4.0 / pow(2.0, glm::abs(v1) + glm::abs(v2)))
-                + ((double)vol->GetNormalizedSample(x + v1, y + v2, z + 1)) * (-4.0 / pow(2.0, glm::abs(v1) + glm::abs(v2)));
+              sg.z += ((double)vol->GetNormalizedSample(x + v1, y + v2, z - 1)) * (4.0 / pow(2.0, glm::abs(v1) + glm::abs(v2))) + ((double)vol->GetNormalizedSample(x + v1, y + v2, z + 1)) * (-4.0 / pow(2.0, glm::abs(v1) + glm::abs(v2)));
 
-              sg.y += ((double)vol->GetNormalizedSample(x + v1, y - 1, z + v2)) * (4.0 / pow(2.0, glm::abs(v1) + glm::abs(v2)))
-                + ((double)vol->GetNormalizedSample(x + v1, y + 1, z + v2)) * (-4.0 / pow(2.0, glm::abs(v1) + glm::abs(v2)));
+              sg.y += ((double)vol->GetNormalizedSample(x + v1, y - 1, z + v2)) * (4.0 / pow(2.0, glm::abs(v1) + glm::abs(v2))) + ((double)vol->GetNormalizedSample(x + v1, y + 1, z + v2)) * (-4.0 / pow(2.0, glm::abs(v1) + glm::abs(v2)));
 
-              sg.x += ((double)vol->GetNormalizedSample(x - 1, y + v2, z + v1)) * (4.0 / pow(2.0, glm::abs(v1) + glm::abs(v2)))
-                + ((double)vol->GetNormalizedSample(x + 1, y + v2, z + v1)) * (-4.0 / pow(2.0, glm::abs(v1) + glm::abs(v2)));
+              sg.x += ((double)vol->GetNormalizedSample(x - 1, y + v2, z + v1)) * (4.0 / pow(2.0, glm::abs(v1) + glm::abs(v2))) + ((double)vol->GetNormalizedSample(x + 1, y + v2, z + v1)) * (-4.0 / pow(2.0, glm::abs(v1) + glm::abs(v2)));
             }
           }
 
@@ -320,7 +364,7 @@ namespace vis
       }
     }
 
-    glm::vec3* gradients_values = new glm::vec3[width * height * depth];
+    glm::vec3 *gradients_values = new glm::vec3[width * height * depth];
     for (int k = 0; k < depth; k++)
     {
       for (int j = 0; j < height; j++)
@@ -332,15 +376,15 @@ namespace vis
       }
     }
 
-    //4
-    //Creating Texture
-    gl::Texture3D* tex3d_gradient = new gl::Texture3D(width, height, depth);
+    // 4
+    // Creating Texture
+    gl::Texture3D *tex3d_gradient = new gl::Texture3D(width, height, depth);
     tex3d_gradient->GenerateTexture(TEXTURE_FILTER, TEXTURE_FILTER, TEXTURE_WRAP, TEXTURE_WRAP, TEXTURE_WRAP);
 
 #ifdef USE_16F_INTERNAL_FORMAT
-    tex3d_gradient->SetData((GLvoid*)gradients_values, GL_RGB16F, GL_RGB, GL_FLOAT);
+    tex3d_gradient->SetData((GLvoid *)gradients_values, GL_RGB16F, GL_RGB, GL_FLOAT);
 #else
-    tex3d_gradient->SetData((GLvoid*)gradients_values, GL_RGB32F, GL_RGB, GL_FLOAT);
+    tex3d_gradient->SetData((GLvoid *)gradients_values, GL_RGB32F, GL_RGB, GL_FLOAT);
 #endif
 
     delete[] gradients_values;
@@ -349,18 +393,19 @@ namespace vis
     return tex3d_gradient;
   }
 
-  gl::Texture2D* GenerateNoiseTexture(float maxvalue, int w, int h)
+  gl::Texture2D *GenerateNoiseTexture(float maxvalue, int w, int h)
   {
     std::default_random_engine generator;
     std::uniform_real_distribution<float> distribution(0.0f, 1.0f);
 
-    GLfloat* disturb_points = new GLfloat[w * h];
-    for (int i = 0; i < w * h; i++) {
+    GLfloat *disturb_points = new GLfloat[w * h];
+    for (int i = 0; i < w * h; i++)
+    {
       float number = distribution(generator) * maxvalue;
       disturb_points[i] = number;
     }
 
-    gl::Texture2D* tex2d = new gl::Texture2D(w, h);
+    gl::Texture2D *tex2d = new gl::Texture2D(w, h);
     tex2d->GenerateTexture(GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 #ifdef USE_16F_INTERNAL_FORMAT
     tex2d->SetData(disturb_points, GL_R16F, GL_RED, GL_FLOAT);
@@ -386,7 +431,7 @@ namespace vis
             float dx = x - (d / 2);
             float dy = y - (d / 2);
             float dz = z - (d / 2);
-            float val = glm::exp(-(dx*dx + dy * dy + dz * dz) / (2.0f * s * s));
+            float val = glm::exp(-(dx * dx + dy * dy + dz * dz) / (2.0f * s * s));
             gaussianvol_file << "0 " << x << " " << y << " " << z << " " << int(val * 255.0f) << "\n";
           }
         }
@@ -395,7 +440,7 @@ namespace vis
     }
   }
 
-  gl::Texture3D* GenerateExtinctionSAT3DTex(StructuredGridVolume* vol, TransferFunction* tf)
+  gl::Texture3D *GenerateExtinctionSAT3DTex(StructuredGridVolume *vol, TransferFunction *tf)
   {
     // 1
     // First, sample the initial "grid" and build SAT
@@ -415,8 +460,8 @@ namespace vis
 
     // 2
     // Then, we must create and generate the 3D texture
-    GLfloat* diff_mat = new GLfloat[vol->GetWidth() * vol->GetHeight() * vol->GetDepth()];
-    double* sat_data = sat3d.GetData();
+    GLfloat *diff_mat = new GLfloat[vol->GetWidth() * vol->GetHeight() * vol->GetDepth()];
+    double *sat_data = sat3d.GetData();
 
     //*
     for (int i = 0; i < vol->GetWidth() * vol->GetHeight() * vol->GetDepth(); i++)
@@ -438,13 +483,13 @@ namespace vis
     }
     // */
 
-    gl::Texture3D* tex3d_sat = new gl::Texture3D(vol->GetWidth(), vol->GetHeight(), vol->GetDepth());
+    gl::Texture3D *tex3d_sat = new gl::Texture3D(vol->GetWidth(), vol->GetHeight(), vol->GetDepth());
     tex3d_sat->GenerateTexture(GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
 #ifdef USE_16F_INTERNAL_FORMAT
-    tex3d_sat->SetData((GLvoid*)diff_mat, GL_R16F, GL_RED, GL_FLOAT);
+    tex3d_sat->SetData((GLvoid *)diff_mat, GL_R16F, GL_RED, GL_FLOAT);
 #else
-    tex3d_sat->SetData((GLvoid*)diff_mat, GL_R32F, GL_RED, GL_FLOAT);
+    tex3d_sat->SetData((GLvoid *)diff_mat, GL_R32F, GL_RED, GL_FLOAT);
 #endif
 
     delete[] diff_mat;
@@ -453,7 +498,7 @@ namespace vis
     return tex3d_sat;
   }
 
-  gl::Texture3D* GenerateScalarFieldSAT3DTex (StructuredGridVolume* vol)
+  gl::Texture3D *GenerateScalarFieldSAT3DTex(StructuredGridVolume *vol)
   {
     // 1
     // First, sample the initial "grid" and build SAT
@@ -473,20 +518,19 @@ namespace vis
 
     // 2
     // Then, we must create and generate the 3D texture
-    GLfloat* diff_mat = new GLfloat[vol->GetWidth() * vol->GetHeight() * vol->GetDepth()];
-    double* sat_data = sat3d.GetData();
+    GLfloat *diff_mat = new GLfloat[vol->GetWidth() * vol->GetHeight() * vol->GetDepth()];
+    double *sat_data = sat3d.GetData();
     for (int i = 0; i < vol->GetWidth() * vol->GetHeight() * vol->GetDepth(); i++)
       diff_mat[i] = (GLfloat)sat_data[i];
 
-    gl::Texture3D* tex3d_sat = new gl::Texture3D(vol->GetWidth(), vol->GetHeight(), vol->GetDepth());
+    gl::Texture3D *tex3d_sat = new gl::Texture3D(vol->GetWidth(), vol->GetHeight(), vol->GetDepth());
     tex3d_sat->GenerateTexture(GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
-    tex3d_sat->SetData((GLvoid*)diff_mat, GL_R32F, GL_RED, GL_FLOAT);
+    tex3d_sat->SetData((GLvoid *)diff_mat, GL_R32F, GL_RED, GL_FLOAT);
 
     delete[] diff_mat;
 
     gl::ExitOnGLError("volrend/utils.cpp - GenerateScalarFieldSAT3DTex()");
     return tex3d_sat;
-
   }
 }

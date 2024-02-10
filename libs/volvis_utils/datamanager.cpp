@@ -322,8 +322,7 @@ namespace vis
 #endif
 
     // Generate Volume Texture
-    curr_gl_tex_structured_volume = vis::GenerateRTexture(curr_vr_volume, 0, 0, 0, curr_vr_volume->GetWidth(),
-                                                          curr_vr_volume->GetHeight(), curr_vr_volume->GetDepth());
+    curr_gl_tex_structured_volume = vis::GenerateRTexture(curr_vr_volume, 0, 0, 0, curr_vr_volume->GetWidth(), curr_vr_volume->GetHeight(), curr_vr_volume->GetDepth());
 
     // Generate gradient, if enabled
     GenerateStructuredGradientTexture();
@@ -419,6 +418,9 @@ namespace vis
 
   bool DataManager::SetCurrentInputVolume(int id)
   {
+
+    // print
+    std::cout << "LOG DataManager::SetCurrentInputVolume: " << id << std::endl;
     if (curr_vol_data_type == vis::GRID_VOLUME_DATA_TYPE::STRUCTURED)
     {
       if (id < GetNumberOfStructuredDatasets())
@@ -731,9 +733,11 @@ namespace vis
   void DataManager::SetCurrentImportances(GLfloat *importances, int width, int height, int depth)
   {
 
-    gl::Texture3D *importances_gl = new gl::Texture3D(width, height, depth);
-    importances_gl->GenerateTexture(GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
-    importances_gl->SetData((GLvoid *)importances, GL_R8, GL_RED, GL_FLOAT);
+    // Cast to unsigned int
+    gl::Texture3D *importances_gl = vis::GenerateRImportancesTexture(importances, 0, 0, 0, width, height, depth);
+    // gl::Texture3D *importances_gl = new gl::Texture3D(width, height, depth);
+    //  importances_gl->GenerateTexture(GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+    // importances_gl->SetData((GLvoid *)importances, GL_R8, GL_RED, GL_FLOAT);
 
     curr_importances = importances_gl;
     curr_importances_width = width;
