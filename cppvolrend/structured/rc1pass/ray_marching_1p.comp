@@ -57,19 +57,20 @@ bool RayAABBIntersection(vec3 vert_eye, vec3 vert_dir, vec3 vol_scaled_dim,
 vec4 ImportanceTranferFunc(float importance)
 {
     if (importance == 0.0) {
-        return vec4(0.0, 0.0, 0.0, 1.0);
+        return vec4(0.0, 0.0, 0.0, 0.0); // transparent - air
     }
     else if (importance == 1.0) {
-        return vec4(1.0, 0.0, 0.0, 1.0);
+        return vec4(1.0, 0.0, 0.0, 1.0); // red 
     }
     else if (importance == 2.0) {
-        return vec4(0.0, 1.0, 0.0, 1.0);
+        return vec4(0.0, 1.0, 0.0, 1.0); // green
     }
     else if (importance == 3.0) {
-        return vec4(0.0, 0.0, 1.0, 1.0);
+        return vec4(0.0, 0.0, 1.0, 1.0); // blue
     }
+    /// Pedro: TODO: Why is this one being painted
     else {
-        return vec4(1.0, 1.0, 0.0, 0.0);
+        return vec4(1.0, 0.0, 1.0, 1.0); // pink - other
     }
 }
 
@@ -77,6 +78,7 @@ vec4 ImportanceTranferFunc(float importance)
 
 void main()
 {
+
     ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
 
     ivec2 size = imageSize(OutputFrag);
@@ -105,6 +107,8 @@ void main()
             // Initialize Transparency and Radiance color
             vec4 dst = vec4(0.0);
 
+            vec4 src_importance = vec4(1.0, 1.0, 0.0, 1.0);
+
             // World position at tnear, translated to the volume [0, VolumeGridSize]
             vec3 wld_pos = r.Origin + r.Dir * tnear;
             // Texture position
@@ -128,7 +132,7 @@ void main()
                     // vec4(density)
                     texture(TexTransferFunc, density);
 
-                vec4 src_importance = ImportanceTranferFunc(importance);
+                src_importance = ImportanceTranferFunc(importance);
 
                 // if sample is non-transparent
                 if (src.a > 0.0)
@@ -142,9 +146,12 @@ void main()
                     ///dst = dst + (1.0 - dst.a) * src;
 
                     // Apply importance
-                    dst = dst + (1.0 - dst.a) * src_importance;
+                    ///dst = dst + (1.0 - dst.a) * src_importance;
+                    dst = src_importance;
 
 
+                    // Without this, there's no teapot. 
+                    // maybe this also means that hollow volumes are not rendered.
                     // Opacity threshold: 99%
                     if (dst.a > 0.99)
                         break;
