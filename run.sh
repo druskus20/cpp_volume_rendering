@@ -1,1 +1,1 @@
-DISPLAY=:0 && ./bin/cppvolrend
+export DISPLAY=:0 && ./bin/cppvolrend
