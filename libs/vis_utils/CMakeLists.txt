@@ -34,14 +34,12 @@ link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 target_link_libraries(vis_utils debug file_utils)
 target_link_libraries(vis_utils debug math_utils)
 target_link_libraries(vis_utils debug gl_utils)
-target_link_libraries(vis_utils debug glew/glew32)
-target_link_libraries(vis_utils debug glew/glew32s)
+target_link_libraries(vis_utils debug GLEW)
 
 target_link_libraries(vis_utils optimized file_utils)
 target_link_libraries(vis_utils optimized math_utils)
 target_link_libraries(vis_utils optimized gl_utils)
-target_link_libraries(vis_utils optimized glew/glew32)
-target_link_libraries(vis_utils optimized glew/glew32s)
+target_link_libraries(vis_utils optimized GLEW)
                       
 # add dependency
 add_dependencies(vis_utils file_utils)

@@ -5,8 +5,13 @@ project(dev_vs)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-message(STATUS "Setting MSVC flags")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHc /std:c++latest")
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(WAYLAND REQUIRED wayland-client)
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHc /std:c++latest")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHc /std:c++latest")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -std=gnu++17")
+include_directories(libs/linux_headers)
+include_directories(libs/linux_compat)
 
 message(${CMAKE_SYSTEM_PROCESSOR})
 message(${CMAKE_SIZEOF_VOID_P}) # 8 for 64 bit and 4 for 32 bit
@@ -25,8 +30,10 @@ set(CMAKE_EXTERNAL_DIRECTORY       "${CMAKE_SOURCE_DIR}/external")
 set(PATH_TO_RESOURCES ${CMAKE_SOURCE_DIR}/../resources/)
 add_definitions(-DCMAKE_PATH_TO_RESOURCES=${PATH_TO_RESOURCES})
 
+
 # adding libraries folder
 add_subdirectory(libs)
+
 
 # add application
 add_subdirectory(cppvolrend)

@@ -22,7 +22,7 @@ add_definitions(-DCMAKE_PATH_TO_DATA_FOLDER=${PATH_TO_DATA_FOLDER})
 # add the executable to be available at ide
 add_executable(cppvolrend
                main.cpp                                                        defines.h
-               app_freeglut.cpp                                                app_freeglut.h
+                              app_freeglut.cpp                                                app_freeglut.h
                app_glfw.cpp                                                    app_glfw.h
                renderingmanager.cpp                                            renderingmanager.h
                volrenderbase.cpp                                               volrenderbase.h
@@ -69,30 +69,40 @@ add_executable(cppvolrend
 find_package(OpenGL REQUIRED)
 link_directories(${OPENGL_gl_LIBRARY})
 
+
+find_library(EGL_LIB EGL /usr/include)
+target_link_libraries(cppvolrend ${OPENGL_gl_LIBRARY})
+target_link_libraries(cppvolrend ${EGL_LIB})
+
+
+
+find_package(GLUT REQUIRED)
+target_link_libraries(cppvolrend ${GLUT_LIBRARIES})
+
+
+
 # . Debug
 target_link_libraries(cppvolrend debug ${OPENGL_gl_LIBRARY})
-target_link_libraries(cppvolrend debug freeglut/freeglut)
-target_link_libraries(cppvolrend debug glfw/debug/glfw3)
-target_link_libraries(cppvolrend debug glew/glew32s)
-target_link_libraries(cppvolrend debug glew/glew32)
+#target_link_libraries(cppvolrend debug freeglut/freeglut)
+target_link_libraries(cppvolrend debug glfw)
+target_link_libraries(cppvolrend debug GLEW)
 target_link_libraries(cppvolrend debug file_utils)
 target_link_libraries(cppvolrend debug gl_utils)
 target_link_libraries(cppvolrend debug math_utils)
 target_link_libraries(cppvolrend debug vis_utils)
 target_link_libraries(cppvolrend debug volvis_utils)
-target_link_libraries(cppvolrend debug im_3_12/im)
+#target_link_libraries(cppvolrend debug im_3_12) 
 # . Release
 target_link_libraries(cppvolrend optimized ${OPENGL_gl_LIBRARY})
-target_link_libraries(cppvolrend optimized freeglut/freeglut)
-target_link_libraries(cppvolrend optimized glfw/release/glfw3)
-target_link_libraries(cppvolrend optimized glew/glew32s)
-target_link_libraries(cppvolrend optimized glew/glew32)
+#target_link_libraries(cppvolrend optimized freeglut/freeglut)
+target_link_libraries(cppvolrend optimized glfw)
+target_link_libraries(cppvolrend optimized GLEW)
 target_link_libraries(cppvolrend optimized file_utils)
 target_link_libraries(cppvolrend optimized gl_utils)
 target_link_libraries(cppvolrend optimized math_utils)
 target_link_libraries(cppvolrend optimized vis_utils)
 target_link_libraries(cppvolrend optimized volvis_utils)
-target_link_libraries(cppvolrend optimized im_3_12/im)
+#target_link_libraries(cppvolrend optimized im_3_12)
 
 # add dependency
 add_dependencies(cppvolrend file_utils)
@@ -101,31 +111,31 @@ add_dependencies(cppvolrend math_utils)
 add_dependencies(cppvolrend vis_utils)
 add_dependencies(cppvolrend volvis_utils)
 # . Debug
-file(COPY "${CMAKE_SOURCE_DIR}/lib/glew/glew32.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/freeglut/freeglut.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/glfw/glfw3.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_avi.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_capture.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_fftw.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_jp2.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_lzo.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_process.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_process_omp.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_wmv.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/zlib1.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
-
-# . Release
-file(COPY "${CMAKE_SOURCE_DIR}/lib/glew/glew32.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/freeglut/freeglut.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/glfw/glfw3.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_avi.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_capture.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_fftw.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_jp2.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_lzo.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_process.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_process_omp.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_wmv.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
-file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/zlib1.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/glew/glew32.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
+##file(COPY "${CMAKE_SOURCE_DIR}/lib/freeglut/freeglut.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/glfw/glfw3.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_avi.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_capture.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_fftw.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_jp2.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_lzo.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_process.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_process_omp.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_wmv.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/zlib1.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Debug")
+#
+## . Release
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/glew/glew32.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
+##file(COPY "${CMAKE_SOURCE_DIR}/lib/freeglut/freeglut.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/glfw/glfw3.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_avi.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_capture.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_fftw.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_jp2.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_lzo.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_process.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_process_omp.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/im_wmv.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")
+#file(COPY "${CMAKE_SOURCE_DIR}/lib/im_3_12/zlib1.dll" DESTINATION "${CMAKE_SOURCE_DIR}/bin/Release")

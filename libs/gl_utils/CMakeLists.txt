@@ -25,12 +25,10 @@ link_directories(${CMAKE_SOURCE_DIR}/lib)
 
 # link with math_utils and glew
 target_link_libraries(gl_utils debug math_utils)
-target_link_libraries(gl_utils debug glew/glew32)
-target_link_libraries(gl_utils debug glew/glew32s)
+target_link_libraries(gl_utils debug GLEW)
 
 target_link_libraries(gl_utils optimized math_utils)
-target_link_libraries(gl_utils optimized glew/glew32)
-target_link_libraries(gl_utils optimized glew/glew32s)
+target_link_libraries(gl_utils optimized GLEW)
 
 # add dependency
 add_dependencies(gl_utils math_utils)

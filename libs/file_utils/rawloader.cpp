@@ -2,6 +2,8 @@
 
 #include <cerrno>
 
+#include "linux_headers.h"
+
 IRAWLoader::IRAWLoader (std::string filename, size_t bytes_per_pixel, size_t num_voxels, size_t type_size)
 {
   m_data = NULL;

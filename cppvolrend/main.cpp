@@ -3,7 +3,7 @@
  *
  * Leonardo Quatrin Campagnolo
  * . campagnolo.lq@gmail.com
-**/
+ **/
 #include "defines.h"
 #include "renderingmanager.h"
 #include "volrenderbase.h"
@@ -14,8 +14,8 @@
 
 #include <glm/glm.hpp>
 
-#include <math_utils/utils.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <math_utils/utils.h>
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------------
 #include "volrendernull.h"
@@ -25,6 +25,8 @@
 #include "structured/rc1pdosct/dosrcrenderer.h"
 #include "structured/rc1pextbsd/ebsrenderer.h"
 #include "structured/rc1pvctsg/vctrenderer.h"
+#include <EGL/egl.h> // Wayland-specific (EGL)
+#include <GL/gl.h>
 // Slice based
 #include "structured/sbtmdos/sbtmdosrenderer.h"
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -39,15 +41,14 @@ ApplicationGLFW app;
 #endif
 #endif
 
-
-float k (float x) {
+float k(float x) {
   x = abs(x);
   return x > 1.f ? 0.0f : 1.0f - x;
 }
 
-int main (int argc, char **argv)
-{
-  if (!app.Init(argc, argv)) return 1;
+int main(int argc, char **argv) {
+  if (!app.Init(argc, argv))
+    return 1;
 
   RenderingManager::Instance()->InitGL();
 
@@ -57,13 +58,18 @@ int main (int argc, char **argv)
   //-----------------------------------------------------------------------------------------------------------------------------------------------------------------
   // 1-pass - Ray Casting - GLSL
   RenderingManager::Instance()->AddVolumeRenderer(new RayCasting1Pass());
-  RenderingManager::Instance()->AddVolumeRenderer(new RC1PConeLightGroundTruthSteps());
-  RenderingManager::Instance()->AddVolumeRenderer(new RC1PConeTracingDirOcclusionShading());
-  RenderingManager::Instance()->AddVolumeRenderer(new RC1PExtinctionBasedShading());
-  RenderingManager::Instance()->AddVolumeRenderer(new RC1PVoxelConeTracingSGPU());
+  RenderingManager::Instance()->AddVolumeRenderer(
+      new RC1PConeLightGroundTruthSteps());
+  RenderingManager::Instance()->AddVolumeRenderer(
+      new RC1PConeTracingDirOcclusionShading());
+  RenderingManager::Instance()->AddVolumeRenderer(
+      new RC1PExtinctionBasedShading());
+  RenderingManager::Instance()->AddVolumeRenderer(
+      new RC1PVoxelConeTracingSGPU());
   //-----------------------------------------------------------------------------------------------------------------------------------------------------------------
   // Slice based
-  RenderingManager::Instance()->AddVolumeRenderer(new SBTMDirectionalOcclusionShading());
+  RenderingManager::Instance()->AddVolumeRenderer(
+      new SBTMDirectionalOcclusionShading());
   //-----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   app.InitImGui();

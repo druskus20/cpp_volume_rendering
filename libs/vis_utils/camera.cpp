@@ -183,7 +183,7 @@ namespace vis
 
       glm::quat p = glm::quat(0, c_data.eye.x, c_data.eye.y, c_data.eye.z);
 
-      glm::quat qy = glm::quat(cos(yrot), sin(yrot) * c_data.up);
+      glm::quat qy = glm::quat(cos(yrot), (float)sin(yrot) * c_data.up);
 
       glm::vec3 loc_up = c_data.up;
 
@@ -193,7 +193,7 @@ namespace vis
         xrot = 0.0f;
 
       glm::vec3 vr = glm::normalize(glm::cross(glm::normalize(glm::vec3(c_data.center - c_data.eye)), loc_up));
-      glm::quat qx = glm::quat(cos(xrot), sin(xrot) * vr);
+      glm::quat qx = glm::quat(cos(xrot), (float)sin(xrot) * vr);
 
       glm::quat rq =
         glm::cross(glm::cross(glm::cross(glm::cross(qx, qy), p),
